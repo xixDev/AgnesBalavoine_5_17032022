@@ -23,7 +23,7 @@ fetch(url).then((res) =>
     } 
   })
 
-// function list products
+// function list products / JSON backend
 function allProducts(){
 
   for (let i=0; i<=productsTab.length-1;i++ ){//list array
@@ -44,9 +44,21 @@ function allProducts(){
     console.log("Image Url : "+ kanapImageUrl);
     console.log("Description : "+ kanapDescription);
     console.log("AltTxt : "+ kanapAltTxt);
-
     console.log("-------------------------------"); 
     // Etape 4
+
+    // <!--#P5 01/ ajout id-->
+    // <section class="items" id="items"> 
+    //       <!-- 
+    //         <a href="./product.html?id=42">
+    //         <article>
+            
+    //         <img src=".../product01.jpg" alt="Lorem ipsum dolor sit amet, Kanap name1">
+    //         <h3 class="productName">Kanap name1</h3>
+    //         <p class="productDescription">Dis enim malesuada risus sapien gravida nulla nisl arcu. Dis enim malesuada risus sapien gravida nulla nisl arcu.</p>
+    //       </article> </a> -->
+        
+    // </section>
     
       // html 
       const items= document.querySelector("#items");
@@ -66,7 +78,7 @@ function allProducts(){
       h3.classList.add("productName");   // Ajoute la classe à l'élément
       /// img
       const img=document.createElement("img");
-      //img.src = kanapImageUrl;
+      //img.src = kanapImageUrl;// à remettre*******************
       img.alt = kanapAltTxt;
       // p
       const p=document.createElement("p");
