@@ -15,7 +15,6 @@ let productId = search.get("id");
 
 // fetch 
 const url='http://localhost:3000/api/products/'+productId;
-//console.log("url : " + url);
 
 fetch(url).then((res) => 
     {
@@ -23,7 +22,6 @@ fetch(url).then((res) =>
       res.json()// donnees en json
        .then((promise) => {
       productTab= promise;
-      // console.log("productsTab : " +promise);
       // appel fonctions
       displayProduct();// show one product
       // addToCart;// add product to cart
@@ -101,17 +99,15 @@ document.querySelector("#addToCart").addEventListener("click", function(event){
   var colors=document.getElementById('colors').value;// Get form elements / string
   var quantity=document.getElementById('quantity').value;// Get form elements / string 
   //
-  mainCart(kanapId,kanapName,colors,quantity);// appel fonction principale avec en parametres les donnees
+  main(kanapId,kanapName,colors,quantity);// appel fonction principale avec en parametres les donnees
 });
 
 ///*********************************** MAIN CART ************************************/ 
 /**
- * Fonction MAIN permettant ...
- * 
- *
-*****************/
+ * Fonction ...
+**/
 // appel fonction avec en parametres les donnees
-function mainCart(kanapId,kanapName,colors,quantity){
+function main(kanapId,kanapName,colors,quantity){
   var kanapCart=JSON.parse(localStorage.getItem("products"));//***/
   // test si : 
   if (kanapCart==null && quantity >=1 && colors!== ""){
@@ -126,7 +122,7 @@ function mainCart(kanapId,kanapName,colors,quantity){
       var colors01=[];
       var quantity01=[];
       var kanapName01;
-      for (let i=0; i<=kanapCart.length-1;i++ ){//list array
+      for (let i=0; i<= kanapCart.length-1;i++ ){//list array
       kanapId01= kanapCart[i].kanapId;  
       kanapName01= kanapCart[i].kanapName;
       colors01= kanapCart[i].colors;
@@ -138,34 +134,31 @@ function mainCart(kanapId,kanapName,colors,quantity){
         alert("Même canapé, même couleur");
       //if(colors01===colors && kanapName01===kanapName){
         console.log("---------------TEST si meme couleur & modele identique --------------");
-        console.log(`colors : ${colors}`); 
-        console.log(`colors01 : ${colors01}`); 
-        console.log(`quantity : ${quantity}`);
-        console.log(`kanapId01 : ${kanapId01}`);
-        console.log(`kanapId : ${kanapId}`);
+        // console.log(`colors : ${colors}`); 
+        // console.log(`colors01 : ${colors01}`); 
+        // console.log(`quantity : ${quantity}`);
+        // console.log(`kanapId01 : ${kanapId01}`);
+        // console.log(`kanapId : ${kanapId}`);
         
         let newVal = Number(quantity) +  Number(quantity01);// on additionne les quantites
-        console.log(`new Val : ${newVal}`);
+        // console.log(`new Val : ${newVal}`);
         findAndReplace(kanapCart, quantity01, newVal);//update array
         saveKanap(kanapCart);// save to localStorage
 
         // sinon si couleur differente et même produit
       } else if(colors01 !=colors && kanapId01===kanapId) { 
-        console.log("---------------TEST si couleur differente & modele  identique --------------");
-          addToCart(kanapId,kanapName,colors,quantity);// appel fonction addToCart
+      console.log("---------------TEST si couleur differente & modele  identique --------------");
+      addToCart(kanapId,kanapName,colors,quantity);// appel fonction addToCart
 
       } else if(colors01 !=colors && kanapId01!=kanapId) { 
       console.log("---------------TEST si couleur & modele différent --------------");
-        addToCart(kanapId,kanapName,colors,quantity);// appel fonction addToCart
-    }
-  } else if(colors01 ===colors && kanapId01!=kanapId) { 
-    console.log("---------------TEST si couleur identique & modele différent --------------");
       addToCart(kanapId,kanapName,colors,quantity);// appel fonction addToCart
-  }
-    
-    // ----------- > revoir fonction de tri avec Array voir dossier tools
-
-
+    }
+    } else if(colors01 ===colors && kanapId01!=kanapId) { 
+      console.log("---------------TEST si couleur identique & modele différent --------------");
+      addToCart(kanapId,kanapName,colors,quantity);// appel fonction addToCart
+    }
+  // ----------- > revoir fonction de tri avec Array voir dossier tools
 }
 
  // // let car = cars.find(car => car.color === "red" && car.type === "cabrio");
@@ -174,22 +167,20 @@ function mainCart(kanapId,kanapName,colors,quantity){
 //  console.log(`kanapFind : ${kanapFind}`);
 //  }
 
+/***********************/
 /**
- * Fonction permettant ...
- * 
- */
-// ***** sans test couleurs 
-// ----------- > revoir 
+ * Fonction ...
+**/
  function addToCart(kanapId,kanapName,colors,quantity){
   // Objet kanap pour un produit
   var kanap = {
       kanapId : productTab._id,
-      kanapName :  productTab.name,
+      kanapName : productTab.name,
       colors : colors,
       quantity : quantity
   }
   // on teste si il y a un article
-  if (quantity >=1 && colors!== "") { // si au moins un canape + ajouter couleur && choix couleur
+  if (quantity >=1 && colors!="") { // si au moins un canape + ajouter couleur && choix couleur
   //
     console.log("-------------CART --------------"); 
     console.log("-------------/Ajout canape/--------------"); 
@@ -198,90 +189,13 @@ function mainCart(kanapId,kanapName,colors,quantity){
     console.log(kanapCart);
     saveKanap(kanapCart);  // à revoir
   }else{
-    
      // ----------- > revoir ajouter controle
     console.log("****************");
     console.log("---------------empty CART--------------");
-    console.log("---- choisir un canape !!!-----"); 
-  }
-  
-}
-
-///*********************************** autres fonctions ************************************/ 
-/**
- * Fonction permettant ...
- */
-// Save item > array 
-function saveKanap(kanapCart){ 
- //-------------/JSON/--------------"); 
-  localStorage.setItem("products",JSON.stringify(kanapCart));
-  //
-}
-
-/**
- * Fonction pour modifier un Objet dans un Array
- * ex si même couleur modifier la quantité
- */ 
- function findAndReplace(object, value, replacevalue){
-  for(var x in object){
-    if(typeof object[x] == typeof {}){
-      findAndReplace(object[x], value, replacevalue);
-    }
-    if(object[x] == value){ 
-      object["quantity"] = replacevalue;
-      // object["quantity"] = replacevalue.toString();// 
-      break; // uncomment to stop after first replacement
-    }
   }
 }
 
 
-/*** **************************** */
-/*** TOOLS */
-
-
-
-
-//
-function showArray(array){
-  console.log(`**** Show ${array} *****`);
-  array.forEach(function(item, index, array) {
-    console.log(item, index); 
-  });
-  console.log('*********');
-}
-
-//
-function showArrayOf(array){
-  console.log(`**** Show ${array} *****`);
-  for (const element of array) {
-  console.log(element);
-  console.log('*********');
-  }
-}
-
-//
-function showObj(objet){
- //
- console.log(`**** Show ${objet} *****`);
- const indexes = Object.keys(objet);
- const valeurs = Object.values(objet);
- const indexesValeurs = Object.entries(objet);
- //
-//  console.log(indexes);
-//  console.log(valeurs);
-//  console.log(indexesValeurs);
-
- for(let[index,valeur] of indexesValeurs ){
-  console.log(`${index} : ${valeur}`);
- }
- console.log('*********');
- 
-}
-
-/**
- * Fonction permettant ...
- */
 
 
 
