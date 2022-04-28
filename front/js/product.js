@@ -99,74 +99,17 @@ document.querySelector("#addToCart").addEventListener("click", function(event){
   var colors=document.getElementById('colors').value;// Get form elements / string
   var quantity=document.getElementById('quantity').value;// Get form elements / string 
   //
-  main(kanapId,kanapName,colors,quantity);// appel fonction principale avec en parametres les donnees
+  addToCart(kanapId,kanapName,colors,quantity);// appel fonction principale avec en parametres les donnees
 });
 
+
 ///*********************************** MAIN CART ************************************/ 
-/**
- * Fonction ...
-**/
-// appel fonction avec en parametres les donnees
-function main(kanapId,kanapName,colors,quantity){
-  var kanapCart=JSON.parse(localStorage.getItem("products"));//***/
-  // test si : 
-  if (kanapCart==null && quantity >=1 && colors!== ""){
-    console.log("--------------- Premier canape --------------");
-    addToCart(kanapId,kanapName,colors,quantity);// appel fonction 
-  
-    // test si :
-  } else if(quantity >=1 && colors!== ""){
-      //var kanapCart=JSON.parse(localStorage.getItem("products"));// si deja JSON
-      console.log("---------------Si au moins un canape--------------");
-      var kanapId01=[];
-      var colors01=[];
-      var quantity01=[];
-      var kanapName01;
-      for (let i=0; i<= kanapCart.length-1;i++ ){//list array
-      kanapId01= kanapCart[i].kanapId;  
-      kanapName01= kanapCart[i].kanapName;
-      colors01= kanapCart[i].colors;
-      quantity01=kanapCart[i].quantity;
-      }
-      // Test si canapé de même couleur et même produit
-      // trouver même couleur dans array et même id, pas le dernier
-      if(colors01===colors && kanapId01===kanapId){
-        alert("Même canapé, même couleur");
-      //if(colors01===colors && kanapName01===kanapName){
-        console.log("---------------TEST si meme couleur & modele identique --------------");
-        // console.log(`colors : ${colors}`); 
-        // console.log(`colors01 : ${colors01}`); 
-        // console.log(`quantity : ${quantity}`);
-        // console.log(`kanapId01 : ${kanapId01}`);
-        // console.log(`kanapId : ${kanapId}`);
-        
-        let newVal = Number(quantity) +  Number(quantity01);// on additionne les quantites
-        // console.log(`new Val : ${newVal}`);
-        findAndReplace(kanapCart, quantity01, newVal);//update array
-        saveKanap(kanapCart);// save to localStorage
-
-        // sinon si couleur differente et même produit
-      } else if(colors01 !=colors && kanapId01===kanapId) { 
-      console.log("---------------TEST si couleur differente & modele  identique --------------");
-      addToCart(kanapId,kanapName,colors,quantity);// appel fonction addToCart
-
-      } else if(colors01 !=colors && kanapId01!=kanapId) { 
-      console.log("---------------TEST si couleur & modele différent --------------");
-      addToCart(kanapId,kanapName,colors,quantity);// appel fonction addToCart
-    }
-    } else if(colors01 ===colors && kanapId01!=kanapId) { 
-      console.log("---------------TEST si couleur identique & modele différent --------------");
-      addToCart(kanapId,kanapName,colors,quantity);// appel fonction addToCart
-    }
-  // ----------- > revoir fonction de tri avec Array voir dossier tools
-}
 
  // // let car = cars.find(car => car.color === "red" && car.type === "cabrio");
 //  let kanapFind = kanapCart.find(kanapFind => kanapFind.colors === colors01 && kanapFind.kanapId === kanapId01);
 //  {
 //  console.log(`kanapFind : ${kanapFind}`);
 //  }
-
 /***********************/
 /**
  * Fonction ...
@@ -180,13 +123,13 @@ function main(kanapId,kanapName,colors,quantity){
       quantity : quantity
   }
   // on teste si il y a un article
-  if (quantity >=1 && colors!="") { // si au moins un canape + ajouter couleur && choix couleur
+  if (quantity >=1 && colors!== ""){  // si au moins un canape + ajouter couleur && choix couleur
   //
     console.log("-------------CART --------------"); 
     console.log("-------------/Ajout canape/--------------"); 
     //setTimeout(kanapCart.push(kanap),10000);
     kanapCart.push(kanap);
-    console.log(kanapCart);
+    //console.table(kanapCart);
     saveKanap(kanapCart);  // à revoir
   }else{
      // ----------- > revoir ajouter controle
@@ -194,6 +137,57 @@ function main(kanapId,kanapName,colors,quantity){
     console.log("---------------empty CART--------------");
   }
 }
+
+///*********************************** autres fonctions ************************************/ 
+
+
+//*/
+ function reduceCart0(kanapCart){ 
+  var kanapCart=JSON.parse(localStorage.getItem("products"));
+  // trier doublons, fusionner 
+        var kanapId01=[];
+        var colors01=[];
+        var quantity01=[];
+        var kanapName01;
+        for (let i=0; i<= kanapCart.length-1;i++ ){//list array
+        kanapId01= kanapCart[i].kanapId;  
+        kanapName01= kanapCart[i].kanapName;
+        colors01= kanapCart[i].colors;
+        quantity01=kanapCart[i].quantity;
+        }
+        var newVal=0;
+
+    // on veut filtrer par couleur et id
+    const filtreKanapCart= kanapCart.filter(function(el){
+      el.quantity=parseFloat(el.quantity);
+      //if(el.colors ==="grey" && el.kanapId ==="7776"){
+      if(el.colors ===colors01 && el.kanapId ===kanapId01){ 
+      console.log("même couleur & canapé identique");  
+      newVal += el.quantity;//
+      //return true;
+      return newVal;
+    }
+    else{
+      console.log("aucune condition remplie");
+    }
+    
+});
+console.log('Tableau de sortie => ');
+console.table(filtreKanapCart);
+console.log(newVal);
+
+   // faire un reduce
+
+
+
+ }
+
+
+ 
+
+
+
+
 
 
 

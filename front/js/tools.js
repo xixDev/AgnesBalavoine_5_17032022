@@ -23,50 +23,57 @@ function orderList(data) {
   return orderedData;
 }
 
-// Tri nombre
-function orderListNb(data) {
-
-  const orderedData = data.sort((a,b) => {
-    return a-b;
-  })
-  console.log(data);
-  return orderedData;
+////***********************************************************************/
+/**
+ * Fonction ...
+**/
+function addToCartO2(kanapId,kanapName,colors,quantity){
+  // Objet kanap pour un produit
+  var kanap = {
+      kanapId : kanapId,
+      kanapName : kanapName,
+      colors : colors,
+      quantity : quantity
+  }
+    console.log("-------------CART --------------"); 
+    console.log("-------------/Modif canape/--------------"); 
+    //setTimeout(kanapCart.push(kanap),10000);
+    kanapCart.push(kanap);
+    magicTool();//enlever doublons
 }
-
-// Tri par champ
-function orderListField(data,field) {
-  var field="";//field='title
-  //sort by field - title, price
-  //return a sorted shallow copy of the CART.contents array
-  const orderedData = data.sort( (a, b)=>{
-      if(a[field] > b[field]){
-          return 1;
-      }else if(a[field] < a[field]){
-          return -1;
-      }else{
-          return 0;
-      }
-  });
-  return orderedData;
-}
-
-///*********************************** autres fonctions ************************************/ 
+ 
 /**
  * Fonction permettant ...
  */
-// Save item > array 
 function saveKanap(kanapCart){ 
   //-------------/JSON/--------------");
-  console.log("-------------/JSON/--------------"); 
   localStorage.setItem("products",JSON.stringify(kanapCart));
-
-   //
+  magicTool();//enlever doublons
  }
- 
+
  /**
-  * Fonction pour modifier un Objet dans un Array
-  * ex si même couleur modifier la quantité
-  */ 
+ * Fonction permettant de faire des choses magiques
+ */
+function magicTool(){ 
+  var kanapCart=JSON.parse(localStorage.getItem("products"));
+  // trier doublons, fusionner 
+  //console.table(kanapCart);
+  const magic = kanapCart.reduce((acc, e) => {
+    e.quantity=parseFloat(e.quantity);
+    const found = acc.find(x => (e.colors === x.colors && e.kanapId === x.kanapId))
+    found ? found.quantity += e.quantity : acc.push(e)
+    return acc
+  }, [])
+  console.table(magic);
+  // recopier magic dans kanapCart ??
+  localStorage.setItem("products",JSON.stringify(magic));
+}
+
+
+/**
+* Fonction pour modifier un Objet dans un Array
+* ex si même couleur modifier la quantité
+*/ 
   function findAndReplace(object, value, replacevalue){
    for(var x in object){
      if(typeof object[x] == typeof {}){
@@ -95,20 +102,7 @@ function saveKanap(kanapCart){
 }
 
 
-/**
- * Fonction permettant de modifier la valeur d'un tableau 
- * ex si même couleur
- *  updateArray(totalTab, total, newTotal);// bug ???
- updateArray(quantityTab, total, newVal);// bug ???
- */ 
- function updateArray(array, index, newValue) {
-  array[index] = newValue;
-}
 
-function updateArray02(array, index, newValue) {
-  array[index].quantity = newValue;
-}
- 
  /*** **************************** */
  /*** TOOLS */
 
@@ -149,6 +143,3 @@ function updateArray02(array, index, newValue) {
   
  }
  
- /**
-  * Fonction permettant ...
-  */
