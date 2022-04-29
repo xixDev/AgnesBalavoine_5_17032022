@@ -5,31 +5,36 @@ maj : 13/04/22
 21/04/22
 ****************/
 
-///*********************************** localStorage ************************************/
+///*********************************** localStorage / API ************************************/
 let productsTab = [];// liste produits / API
-// order list
-var kanapCart=JSON.parse(localStorage.getItem("products"));// panier stocké dans le localStorage
 
-// if(kanapCart==null){
-//   var kanapCart=[];// si localStorage vide je cree mon tableau de produits
-// }
-// afficher : Panier vide ----- > ****
+// localStorage
+var kanapCart=JSON.parse(localStorage.getItem("products"));
+if(kanapCart==null){
+  // si localStorage vide, initialisation tableau kanapCart
+  var kanapCart=[];
+}
 
-// fetch appel à l'API 
+// fetch appel à l'API / URL sur serveur local
 const url='http://localhost:3000/api/products/';// pr recuperer prix ect
 
 ///*********************************** MAIN ************************************/
 
 /***********************/
-var total=0; // total par modèle de canapé
-var totalTab =[];// totaux
+// let kanap={}; // un produit
+// total par modèle de canapé
+var total=0; 
+// totaux
+var totalTab =[];
 var quantityTab =[];// 
 var kanapTotalQuantity="";
 var kanapTotalPrice=0;
+//index du canapé sauvegardé dans LocalStorage
+var index=0;
 
 /***********************/
-// mainCart();// appel fonction principale
-// appel fonction principale
+// On vérifie que l'arborescence DOM est construite, le HTML chargé
+// puis appel fonction principale mainCart
 if (document.readyState == "loading") {
   document.addEventListener("DOMContentLoaded", mainCart);
 } else {
@@ -56,7 +61,8 @@ function mainCart(){
         fetch(url+kanapId01).then((res) => 
       {
         if (res.ok){
-        res.json()// donnees en json
+        // donnees en json
+        res.json()
         .then((promise) => {
          productsTab= promise;
          // API price, et url image, alt texte
@@ -64,82 +70,81 @@ function mainCart(){
          kanapPrice = productsTab.price;
          kanapImageUrl01 = productsTab.imageUrl;
          kanapAltTxt01= productsTab.altTxt; 
-
+         index=i;
+  
         // JSON kanapcart
         kanapName01= kanapCart[i].kanapName;
         colors01= kanapCart[i].colors;
-        quantity=parseFloat(kanapCart[i].quantity);//
+        quantity=parseFloat(kanapCart[i].quantity);
         
         // Affichage Html du panier
         displayProducts(kanapId,kanapName01,kanapPrice,kanapImageUrl01,kanapAltTxt01,colors01,quantity,total);
-        cartManager(kanapId,kanapPrice,quantity);//
-        cartTotal(quantity,kanapPrice);// ici ???
+        // Gestion des actions (modification produit, supression, envoi formulaire)
+        cartManager(kanapId,kanapName01,colors01,quantity,kanapPrice,index);
+        // Calcul Totaux et nombre articles
+        cartTotal(quantity,kanapPrice);
       })
+    //})
+// .catch(() => { alert ("Erreur");});
+// }
     }else {
-      console.log("Erreur");// ajouter catch
+      // ajouter catch
+      console.log("Erreur");
     }
   })
 }
-
 }
+
 
 ///*********************************** MAIN Order ************************************/
 /**
  * Fonction ...
 **/
-function cartManager(kanapId,kanapPrice,quantity){
+function cartManager(kanapId,kanapName01,colors01,quantity,kanapPrice,index){
     /*************
     * BTN UPDATE
     *************/
-     //var article=document.querySelectorAll(".cart__item");
-     // if(article.dataset.id.value===kanapId)
-    // var article=document.querySelectorAll(".cart__item");
-    var inputsQuantity= document.querySelectorAll(".itemQuantity");
+    //  var article=document.querySelectorAll('[data-id=kanapId] .cart__item');
+    //  console.log(data-id);
+    //if(article.dataset.id.value===kanapId)
+   var inputsQuantity= document.querySelectorAll('[data-id] .itemQuantity');
     var input="";
     for (let i=0; i<= inputsQuantity.length-1;i++){
-      input =  inputsQuantity[i]; 
-   }
-   // click change input
-   input.addEventListener("change", function(event){
-    console.log("click");
-      event.preventDefault();//gestion event
-       updateProduct(event,input,kanapId,kanapPrice,quantity);//
-       
-    }); // 
-    input.removeEventListener('blur',function(event){
-      event.preventDefault();//gestion event
-      console.log("no click");
-      
-   },false); // 
-
-    
+      input = inputsQuantity[i];  
+    }
+    input.addEventListener('change', function(event){
+    //gestion event
+    event.preventDefault();
+    updateProduct(event,input,kanapId,kanapName01,colors01,quantity,kanapPrice,index);
+    });
 
     /*************
     * BTN DELETE
     *************/
-      var deleteProductButtons = document.getElementsByClassName("deleteItem");
+     var deleteProductButtons = document.querySelectorAll(".deleteItem");
           for (var i = 0; i < deleteProductButtons.length; i++) {
             var button = deleteProductButtons[i]; 
             button.addEventListener("click", deleteProduct);    
       }
-      console.log(button.parentElement.parentElement.parentElement.parentElement);
+      // console.log(button.parentElement.parentElement.parentElement.parentElement);
       button.addEventListener("click", deleteProduct); 
+
     /*************
      * BTN SUBMIT
     *************/
     document.querySelector("#order").addEventListener("click", function(event){
       event.preventDefault();//gestion event 
-      // 
-      var kanapIds=[];// tableau des ID 
-      for (let i=0; i<= kanapCart.length-1;i++ ){//list array
+      // tableau des ID des produits dans le panier
+      var kanapIds=[];
+      for (let i=0; i<= kanapCart.length-1;i++ ){
         kanapId=kanapCart[i].kanapId;// OU ?
         kanapIds.push(kanapId);
       // Get form / contacts infos
-      var firstName=document.getElementById('firstName').value;// Get form elements / string
-      var lastName=document.getElementById('lastName').value;// Get form elements / string 
-      var address=document.getElementById('address').value;// Get form elements / string
-      var city=document.getElementById('city').value;// Get form elements / string
-      var email=document.getElementById('email').value;// Get form elements / string
+      var firstName=document.getElementById('firstName').value;
+      var lastName=document.getElementById('lastName').value; 
+      var address=document.getElementById('address').value;
+      var city=document.getElementById('city').value;
+      var email=document.getElementById('email').value;
     }
       // Appel fonction envois des données
       orderForm(firstName,lastName,address,city,email,kanapIds);
@@ -150,48 +155,42 @@ function cartManager(kanapId,kanapPrice,quantity){
 /**
  * Fonction ...
 **/
-function updateProduct(event,input,kanapId,kanapPrice,quantity) {
+function updateProduct(event,input,kanapId,kanapName01,colors01,quantity,kanapPrice,index) {
   var input= event.target;
-
+  // 
   if (isNaN( input.value) ||  input.value <= 0) {
     input.value = 1;
   }
   var newVal= input.value;
-  console.log("********* dans updateProduct");
-  console.log(`quantity : ${quantity}`);
-  console.log(`newVal : ${newVal}`);
-  console.log(kanapId);
+  // modifie produit dans tableau JSON
+  kanapCart[index].quantity=newVal;
+  // console.table(kanapCart);
+  // save to LocalStorage
+  saveKanap(kanapCart);
 
-  console.log(event.currentTarget);
-  findAndReplaceQ(kanapCart,quantity,newVal);//update an object (à modifier)
-  saveKanap(kanapCart);// save to localStorage
-  console.table(kanapCart);
-
- //////////////// ----> 
- //location.reload();// hack :) ben ça marche avec ça.. (pb de input / click)
- //////////////// ----> 
-//cartTotal(newVal,kanapPrice);//recalcul, totaux
+  //cartTotal(newVal,kanapPrice);//recalcul, totaux à revoir
 }
 
 ///*********************************** CALCUL TOTAL PRICE & NB  ARTICLES ************************************/
 /**
- * 
+ * function  
  */
 function cartTotal(quantity,kanapPrice){
   total=quantity*kanapPrice;
-  totalTab.push(total);// array de tous les totaux
+  // array de tous les totaux
+  totalTab.push(total);
   quantityTab.push(quantity);//
-
   // console.log(totalTab);
   // console.log(quantityTab);
   // calcul totaux
+  // faire reduce
   var kanapTotalQuantity=0;
   var kanapTotalPrice=0;
-  for (let i=0; i< totalTab.length;i++ ){//list array
+  for (let i=0; i< totalTab.length;i++ ){
     kanapTotalPrice += totalTab[i];
   }
   // calcul nombre d'articles
-  for (let j=0; j< quantityTab.length;j++ ){//list array
+  for (let j=0; j< quantityTab.length;j++ ){
     kanapTotalQuantity+=quantityTab[j];
   }
 // affichage totaux produits & nombre d'articles
@@ -205,24 +204,28 @@ totalQuantity.innerHTML=kanapTotalQuantity;
 ///*********************************** DELETE ************************************/
 /**
  * function 
- * @param {*} position 
+ * @param {*} event
  */
 
-// **** good almost
+// **** good almost à revoir avec index ou closest
 function deleteProduct(event){
   if(confirm("Voulez-vous vraiment supprimer ? ")){
     if (event !== -1) {
-    kanapCart.splice(event,1);//supprime 1 element à partir de la position - id choisie
+    //supprime 1 element à partir de la position - id choisie
+    kanapCart.splice(event,1);
     var removeA=document.querySelector(".cart__item");
     var containerA=removeA.parentNode;
-    containerA.removeChild(removeA);// supprimer du dom l'article correspondant
+    // supprimer du dom l'article correspondant
+    // revoir avec index ou closest
+    containerA.removeChild(removeA);
     saveKanap(kanapCart);
-    cartTotal();// recalcul totaux
+    // recalcul totaux
+    cartTotal();
     location.reload();//
-    alert("suppression effectuée");
+    alert("Suppression effectuée");
     }
   } else {
-    alert("suppression annulée");
+    alert("Suppression annulée");
   }
 }
 
@@ -231,13 +234,12 @@ function deleteProduct(event){
  * Fonction permettant d'afficher les donnees dans la page html
 **/
  function displayProducts(kanapId,kanapName01,kanapPrice,kanapImageUrl01,kanapAltTxt01,colors01,quantity,total){
-  //
+  
   const cart__items = document.querySelector("#cart__items");//// SECTION 00
   const article=document.createElement("article");///// ARTICLE 01
   article.classList.add("cart__item");
   article.setAttribute('data-id', kanapId);//
   article.setAttribute('data-color', colors01);//
-
 
   const div_img=document.createElement("div");///// div IMG
   div_img.classList.add("cart__item__img");
@@ -294,9 +296,8 @@ function deleteProduct(event){
       // quantity -> btn *******************************
       // <p>Qté : </p>
       const p_quant=document.createElement("p");
-      //const nkp= document.createTextNode("Qté (total: " + total +")");// ???? 
-      
-      const nkp= document.createTextNode("Qté");// ???? 
+
+      const nkp= document.createTextNode("Qté");
       div_settings_quant.appendChild(p_quant);
       p_quant.appendChild(nkp);
 
@@ -357,7 +358,11 @@ function deleteProduct(event){
    products : kanapIds,
  }
 
-   // on teste si les # champs sont remplis
+  // Tests si les # champs sont remplis
+  // mettre if si toutes les conditons ne sont pas remplies
+  // !== "" ou ==null
+  // if(firstName !=="" && lastName !=="" && address !=="" && city !==""  && email !=="" ){}
+
    if(regexName.test(firstName) !== true)
    {
     firstNameErrorMsg.innerHTML="Remplissez le champ PRENOM correctement";
@@ -381,12 +386,9 @@ function deleteProduct(event){
      lastNameErrorMsg.innerHTML="";
      cityErrorMsg.innerHTML="";
      emailErrorMsg.innerHTML="";
-     console.log(`kanapIds dans contactform apres : ${kanapIds}`);
-     console.table(formCart);
-      /**
-      * <form method="get" class="cart__order__form">
-      */
-     cartOrderForm(formCart);// fetch
+    //  console.log(`kanapIds dans contactform apres : ${kanapIds}`);
+    //  console.table(formCart);
+    cartOrderForm(formCart);// fetch
    }
  
  }
