@@ -12,7 +12,6 @@ let productTab = [];// array un seul produit
 let search = new URLSearchParams(window.location.search);
 let productId = search.get("id");
 let kanap={}; // un produit
-//console.log("id : " + productId);
 
 // fetch 
 const url='http://localhost:3000/api/products/'+productId;
@@ -23,9 +22,8 @@ fetch(url).then((res) =>
       res.json()// donnees en json
        .then((promise) => {
       productTab= promise;
-      // appel fonctions
-      displayProduct();// show one product
-      // addToCart;// add product to cart
+      // appel fonction
+      displayProduct();
         }) 
     }// catch ?
       else {
@@ -33,9 +31,9 @@ fetch(url).then((res) =>
     } 
   })
 
-///*********************************** CART affichage d'un produit ************************************/ 
+///*********************************** CART affichage ************************************/ 
 /**
- * Fonction ...
+ * Fonction permettant d'afficher un produit 
 **/
 function displayProduct(){
   // list proprietes objects
@@ -47,7 +45,6 @@ function displayProduct(){
   let kanapAltTxt = productTab.altTxt;
 
   // html
-
   /// img
   const item__img= document.querySelector("#item__img");
   const img=document.createElement("img");
@@ -56,7 +53,6 @@ function displayProduct(){
   item__img.appendChild(img);
 
   // title
-  // <title>Nom du produit</title>
   const title= document.querySelector("#title");
   const nkanapName= document.createTextNode(kanapName);
   title.appendChild(nkanapName);
@@ -87,7 +83,7 @@ function displayProduct(){
 // localStorage
 var kanapCart=JSON.parse(localStorage.getItem("products"));
 if(kanapCart==null){
-  // si localStorage vide, initialisation tableau kanapCart
+  // si localStorage vide, initialisation tableau panier : kanapCart 
   var kanapCart=[];
 }
 
@@ -98,7 +94,7 @@ document.querySelector("#addToCart").addEventListener("click", function(event){
   // données stockées dans tableau / API
   var kanapId = productTab._id;
   var kanapName = productTab.name;
-  // Get form elements / string
+  // Choix utilsateurs : couleur, quantité
   var colors=document.getElementById('colors').value;
   var quantity=document.getElementById('quantity').value;
   // appel fonction principale avec en parametres les donnees
@@ -109,7 +105,9 @@ document.querySelector("#addToCart").addEventListener("click", function(event){
 
 /***********************/
 /**
- * Fonction ...
+ * Fonction pour ajouter des produits dans un tableau
+ * en paramétres les données de l'API et les saisies utulisateurs
+ * sauvegarde dans le localStarage
 **/
  function addToCart(kanapId,kanapName,colors,quantity){
   // Objet kanap pour un produit
@@ -119,16 +117,18 @@ document.querySelector("#addToCart").addEventListener("click", function(event){
       colors : colors,
       quantity : quantity
   }
-  // si au moins un canape + choix de couleur
+  // si au moins un canape et saise du choix de couleur
   if (quantity >=1 && colors!== ""){  
   // ajout du produit au tableau kanapCart
   kanapCart.push(kanap);
-  // sauvegarde dans le LocalStarage et traitment doublons
+  // sauvegarde dans le LocalStarage et traitement doublons
   saveKanap(kanapCart);  
-
+  //
+  alert("Vous avez ajouté des produits dans votre panier. Merci");
+  // s'il manque soit la quantité ou la couleur
   }else{
-   //
-   alert("Veuillez choisir une couleur ou une quantité");
+  //
+  alert("Veuillez choisir une couleur ou une quantité");
   }
 }
 

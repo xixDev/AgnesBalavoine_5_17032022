@@ -8,7 +8,7 @@ start : 22/03/22
 confirmOrder();  
 
 /**
- * Fonction ...
+ * Fonction pour confirmer commande
 **/
 function confirmOrder(){
   const orderIdn= document.getElementById("orderId");

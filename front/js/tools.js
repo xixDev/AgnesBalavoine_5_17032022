@@ -5,7 +5,7 @@ maj : 28/04/22
 ****************/
 
 /**
- * Fonction permettant ...
+ * Fonction permettant de trier une liste 
  * @param {*} data 
  * @returns 
  */
@@ -25,38 +25,36 @@ function orderList(data) {
 
 ////***********************************************************************/
 /**
- * Fonction permettant ...
+ * Fonction permettant de sauvegarder les données dans le localStaorage
  */
 function saveKanap(kanapCart){ 
   //-------------/JSON/--------------");
   localStorage.setItem("products",JSON.stringify(kanapCart));
-  magicTool();//enlever doublons
+  //enlever doublons
+  magicTool();
  }
 
  /**
- * Fonction permettant de faire des choses magiques
+ * Fonction permettant d'enlever les doublons et d'ajouter les quantités
+ * 
  */
 function magicTool(){ 
-  var kanapCart=JSON.parse(localStorage.getItem("products"));
-  // trier doublons, fusionner 
-  //console.table(kanapCart);
-  const magic = kanapCart.reduce((acc, e) => {
+  // trier doublons par ID et couleurs, fusionner les identiques
+  kanapCart = kanapCart.reduce((acc, e) => {
     e.quantity=parseFloat(e.quantity);
-    const found = acc.find(x => (e.colors === x.colors && e.kanapId === x.kanapId))
-    found ? found.quantity += e.quantity : acc.push(e)
-    return acc
+    // on cherche les enrgistrements : même couleurs et même id
+      const found = acc.find(x => (e.colors === x.colors && e.kanapId === x.kanapId))
+      // si doublons, on ajoute la quantité 
+      found ? found.quantity += e.quantity : acc.push(e)
+      return acc
   }, [])
-  console.table(magic);
- 
- // recopier magic dans kanapCart ??
-  // kanapCart=magic.map((el) => {
-  //   console.log(el);
-  // });
-  // console.log(kanapCart);
-
-  //localStorage.setItem("products",JSON.stringify(kanapCart));
-  localStorage.setItem("products",JSON.stringify(magic));
+  //sauvegarde du panier dans le localStorage au format JSON 
+  localStorage.setItem("products",JSON.stringify(kanapCart));
 }
+
+
+
+
 
 
 

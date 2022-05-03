@@ -6,7 +6,8 @@ maj : 13/04/22
 ****************/
 
 ///*********************************** localStorage / API ************************************/
-let productsTab = [];// liste produits / API
+// liste produits / API
+let productsTab = [];
 
 // localStorage
 var kanapCart=JSON.parse(localStorage.getItem("products"));
@@ -21,7 +22,6 @@ const url='http://localhost:3000/api/products/';// pr recuperer prix ect
 ///*********************************** MAIN ************************************/
 
 /***********************/
-// let kanap={}; // un produit
 // total par modèle de canapé
 var total=0; 
 // totaux
@@ -43,13 +43,14 @@ if (document.readyState == "loading") {
  
 /***********************/
 /**
- * Fonction ...
+ * Fonction permettant d'afficher les produits dans le panier
+ * appel à l'API pour récupérer les prix, les URL d'images, les textes alternatifs 
 **/
 function mainCart(){
   orderList(kanapCart);// tri par modele / ID
   // boucle sur tableau kanapCart JSON du panier client
   for (let i=0; i<= kanapCart.length-1;i++){
-    var kanapId01=kanapCart[i].kanapId;// bug ???
+    var kanapId01=kanapCart[i].kanapId;
     var kanapPrice ="";
     var kanapName01= "";
     var kanapImageUrl01 = "";
@@ -57,8 +58,8 @@ function mainCart(){
     var colors01= "";
     var quantity= "";
  
-      // requete fetch API pour récupérer les prix, les URL d'images, les textes alternatifs
-        fetch(url+kanapId01).then((res) => 
+      // requete fetch API 
+      fetch(url+kanapId01).then((res) => 
       {
         if (res.ok){
         // donnees en json
@@ -66,48 +67,45 @@ function mainCart(){
         .then((promise) => {
          productsTab= promise;
          // API price, et url image, alt texte
-         kanapId=productsTab._id;// bug ???? hack
+         kanapId=productsTab._id;
          kanapPrice = productsTab.price;
          kanapImageUrl01 = productsTab.imageUrl;
          kanapAltTxt01= productsTab.altTxt; 
          index=i;
-  
-        // JSON kanapcart
-        kanapName01= kanapCart[i].kanapName;
-        colors01= kanapCart[i].colors;
-        quantity=parseFloat(kanapCart[i].quantity);
-        
+
+          // JSON kanapcart
+          kanapName01= kanapCart[i].kanapName;
+          colors01= kanapCart[i].colors;
+          quantity=parseFloat(kanapCart[i].quantity);
+          total=quantity*kanapPrice;
+          // array de tous les totaux
+          totalTab.push(total);
+          quantityTab.push(quantity);
+
         // Affichage Html du panier
         displayProducts(kanapId,kanapName01,kanapPrice,kanapImageUrl01,kanapAltTxt01,colors01,quantity,total);
         // Gestion des actions (modification produit, supression, envoi formulaire)
         cartManager(kanapId,kanapName01,colors01,quantity,kanapPrice,index);
         // Calcul Totaux et nombre articles
-        cartTotal(quantity,kanapPrice);
+        cartTotal();
       })
-    //})
-// .catch(() => { alert ("Erreur");});
-// }
-    }else {
-      // ajouter catch
-      console.log("Erreur");
-    }
+      
+      .catch(() => { alert ("Erreur");});
+}
   })
+  
 }
 }
-
 
 ///*********************************** MAIN Order ************************************/
 /**
- * Fonction ...
+ * Fonction regroupant les actions sur le panier, modiifer, supprimer, envoyer les données
 **/
 function cartManager(kanapId,kanapName01,colors01,quantity,kanapPrice,index){
     /*************
     * BTN UPDATE
     *************/
-    //  var article=document.querySelectorAll('[data-id=kanapId] .cart__item');
-    //  console.log(data-id);
-    //if(article.dataset.id.value===kanapId)
-   var inputsQuantity= document.querySelectorAll('[data-id] .itemQuantity');
+   var inputsQuantity= document.querySelectorAll('.itemQuantity');
     var input="";
     for (let i=0; i<= inputsQuantity.length-1;i++){
       input = inputsQuantity[i];  
@@ -115,7 +113,7 @@ function cartManager(kanapId,kanapName01,colors01,quantity,kanapPrice,index){
     input.addEventListener('change', function(event){
     //gestion event
     event.preventDefault();
-    updateProduct(event,input,kanapId,kanapName01,colors01,quantity,kanapPrice,index);
+    updateProduct(event,input,kanapId,quantity,kanapPrice,index);
     });
 
     /*************
@@ -123,12 +121,13 @@ function cartManager(kanapId,kanapName01,colors01,quantity,kanapPrice,index){
     *************/
      var deleteProductButtons = document.querySelectorAll(".deleteItem");
           for (var i = 0; i < deleteProductButtons.length; i++) {
-            var button = deleteProductButtons[i]; 
-            button.addEventListener("click", deleteProduct);    
+            var button = deleteProductButtons[i];   
       }
-      // console.log(button.parentElement.parentElement.parentElement.parentElement);
-      button.addEventListener("click", deleteProduct); 
-
+      button.addEventListener('click', function(event){
+        //gestion event
+        event.preventDefault();
+        deleteProduct(event,kanapId,quantity,index);
+        });
     /*************
      * BTN SUBMIT
     *************/
@@ -153,37 +152,63 @@ function cartManager(kanapId,kanapName01,colors01,quantity,kanapPrice,index){
 
 ///*********************************** UPDATE ************************************/
 /**
- * Fonction ...
+ * Fonction pour modiifer un produit
 **/
-function updateProduct(event,input,kanapId,kanapName01,colors01,quantity,kanapPrice,index) {
+function updateProduct(event,input,kanapId,quantity,kanapPrice,index) {
   var input= event.target;
   // 
   if (isNaN( input.value) ||  input.value <= 0) {
     input.value = 1;
   }
-  var newVal= input.value;
+  var newVal= parseFloat(input.value);
   // modifie produit dans tableau JSON
   kanapCart[index].quantity=newVal;
-  // console.table(kanapCart);
   // save to LocalStorage
   saveKanap(kanapCart);
-
-  //cartTotal(newVal,kanapPrice);//recalcul, totaux à revoir
+  //tab total update
+  totalTab[index]=newVal*kanapPrice;
+  quantityTab[index]=newVal;
+  //recalcul, totaux
+  cartTotal();
 }
+
+///*********************************** DELETE ************************************/
+/**
+ * function pour supprimer un produit
+ */
+ function deleteProduct(event,kanapId,quantity,index){ 
+  var button = event.target;
+   // test confirmation supression
+   if(confirm("Voulez-vous vraiment supprimer cet article ? ")){
+     if (event !== -1) {
+     // supprimer du DOM l'article correspondant
+    const removeB=button.parentElement.parentElement.parentElement.parentElement;
+    removeB.remove();
+     // modifie produit dans tableau JSON
+     kanapCart[index].quantity=0;
+     //tableau totaux et nombres articles mis à jour
+    totalTab[index]=0;
+    quantityTab[index]=0;
+     //recalcul, totaux
+    cartTotal();
+    //
+    kanapCart.splice(index,1);
+    // sauvegarde au localStorage
+    localStorage.setItem("products",JSON.stringify(kanapCart));
+    location.reload();
+    alert("Suppression effectuée");
+     }
+   } else {
+    alert("Suppression annulée");
+   }
+ }
 
 ///*********************************** CALCUL TOTAL PRICE & NB  ARTICLES ************************************/
 /**
- * function  
+ * function pour afficher totaux et nombre articles
  */
-function cartTotal(quantity,kanapPrice){
-  total=quantity*kanapPrice;
-  // array de tous les totaux
-  totalTab.push(total);
-  quantityTab.push(quantity);//
-  // console.log(totalTab);
-  // console.log(quantityTab);
+function cartTotal(){
   // calcul totaux
-  // faire reduce
   var kanapTotalQuantity=0;
   var kanapTotalPrice=0;
   for (let i=0; i< totalTab.length;i++ ){
@@ -193,41 +218,14 @@ function cartTotal(quantity,kanapPrice){
   for (let j=0; j< quantityTab.length;j++ ){
     kanapTotalQuantity+=quantityTab[j];
   }
-// affichage totaux produits & nombre d'articles
-const totalPrice = document.querySelector("#totalPrice");////
-totalPrice.innerHTML=kanapTotalPrice;
+  // affichage totaux produits & nombre d'articles
+  const totalPrice = document.querySelector("#totalPrice");////
+  totalPrice.innerHTML=kanapTotalPrice;
 
-const totalQuantity = document.querySelector("#totalQuantity");////
-totalQuantity.innerHTML=kanapTotalQuantity;
+  const totalQuantity = document.querySelector("#totalQuantity");////
+  totalQuantity.innerHTML=kanapTotalQuantity;
 }
 
-///*********************************** DELETE ************************************/
-/**
- * function 
- * @param {*} event
- */
-
-// **** good almost à revoir avec index ou closest
-function deleteProduct(event){
-  if(confirm("Voulez-vous vraiment supprimer ? ")){
-    if (event !== -1) {
-    //supprime 1 element à partir de la position - id choisie
-    kanapCart.splice(event,1);
-    var removeA=document.querySelector(".cart__item");
-    var containerA=removeA.parentNode;
-    // supprimer du dom l'article correspondant
-    // revoir avec index ou closest
-    containerA.removeChild(removeA);
-    saveKanap(kanapCart);
-    // recalcul totaux
-    cartTotal();
-    location.reload();//
-    alert("Suppression effectuée");
-    }
-  } else {
-    alert("Suppression annulée");
-  }
-}
 
 ///*********************************** AFFICHAGE HTML ************************************/
 /**
@@ -240,7 +238,7 @@ function deleteProduct(event){
   article.classList.add("cart__item");
   article.setAttribute('data-id', kanapId);//
   article.setAttribute('data-color', colors01);//
-
+  ///// div IMG
   const div_img=document.createElement("div");///// div IMG
   div_img.classList.add("cart__item__img");
 
@@ -294,14 +292,12 @@ function deleteProduct(event){
       div_settings.appendChild(div_settings_quant);
 
       // quantity -> btn *******************************
-      // <p>Qté : </p>
       const p_quant=document.createElement("p");
 
       const nkp= document.createTextNode("Qté");
       div_settings_quant.appendChild(p_quant);
       p_quant.appendChild(nkp);
 
-     //document.querySelector("input").value=quantity;
       const input_quantity=document.createElement("input"); ///// 
       input_quantity.setAttribute("type", "number");
       input_quantity.classList.add("itemQuantity");//
@@ -309,7 +305,6 @@ function deleteProduct(event){
       input_quantity.setAttribute("min", "1");
       input_quantity.setAttribute("max", "100");
       input_quantity.setAttribute("value", quantity);
-      //console.log(`quantity dans display : ${quantity} : ${total}`);
 
       div_settings_quant.appendChild(input_quantity);
       // div settings__delete
@@ -323,14 +318,12 @@ function deleteProduct(event){
       const nkdelete= document.createTextNode("Supprimer");
       p_delete.classList.add("deleteItem");
       div_settings_del.appendChild(p_delete);
-      p_delete.appendChild(nkdelete); 
-
-     
+      p_delete.appendChild(nkdelete);   
 }
 
 //*********************************** ORDER FORM ************************************/ 
 /**
- * Fonction ...
+  * Fonction validation des données utilisateurs
 **/
  function orderForm(firstName,lastName,address,city,email,kanapIds){
   /*** REGEX ***/
@@ -358,11 +351,7 @@ function deleteProduct(event){
    products : kanapIds,
  }
 
-  // Tests si les # champs sont remplis
-  // mettre if si toutes les conditons ne sont pas remplies
-  // !== "" ou ==null
-  // if(firstName !=="" && lastName !=="" && address !=="" && city !==""  && email !=="" ){}
-
+  // Tests si les différents champs sont remplis
    if(regexName.test(firstName) !== true)
    {
     firstNameErrorMsg.innerHTML="Remplissez le champ PRENOM correctement";
@@ -380,23 +369,22 @@ function deleteProduct(event){
     emailErrorMsg.innerHTML="EMAIL invalide";
 
    } else {
-     ///  ajouter si OK enlever msg *******
+     ///  si OK enlever msg *******
      firstNameErrorMsg.innerHTML="";
      lastNameErrorMsg.innerHTML="";
      lastNameErrorMsg.innerHTML="";
      cityErrorMsg.innerHTML="";
      emailErrorMsg.innerHTML="";
-    //  console.log(`kanapIds dans contactform apres : ${kanapIds}`);
-    //  console.table(formCart);
+     // appel fonction avec en paramétre les données (les ID, les données utulisateurs) 
     cartOrderForm(formCart);// fetch
    }
  
  }
 
 /**
- * Fonction ...
+ * Fonction pour envoyer les données à l'API
+ * POST fetch
 **/
-// POST fetch
 function cartOrderForm(formCart){
   const headersForm = {
     method: 'POST',
